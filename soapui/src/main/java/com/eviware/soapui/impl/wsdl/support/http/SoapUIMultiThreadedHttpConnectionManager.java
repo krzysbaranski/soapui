@@ -17,12 +17,14 @@
 package com.eviware.soapui.impl.wsdl.support.http;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.ClientConnectionOperator;
@@ -248,6 +250,16 @@ public class SoapUIMultiThreadedHttpConnectionManager extends ThreadSafeClientCo
                 boolean last = i == addresses.length - 1;
 
                 Socket sock = sf.createSocket(params);
+                try {
+		    // hostname is required by web server with virtual hosts
+                    PropertyUtils.setProperty(sock, "host", target.getHostName());
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
                 conn.opening(sock, target);
 
                 InetSocketAddress remoteAddress = new InetSocketAddress(address, port);
